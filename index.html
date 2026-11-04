@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101916">
+<meta name="description" content="Your personal Holiday Fit workout, nutrition and progress tracker.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<title>Holiday Fit</title>
+<style>
+:root{--bg:#0d1412;--panel:#17221e;--panel2:#202e28;--text:#f3f7f4;--muted:#a8b8af;--green:#9be3b2;--accent:#3b9b6a;--line:#304039;--red:#ffb4a9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:86px}
+header{padding:22px 18px 16px;background:linear-gradient(135deg,#172b22,#101916);position:sticky;top:0;z-index:3;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:25px;letter-spacing:.4px}header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+main{max-width:720px;margin:auto;padding:16px;display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--panel2);border-radius:13px;padding:13px}.stat strong{display:block;font-size:25px;color:var(--green);margin-top:4px}
+.progress{height:9px;background:#33423a;border-radius:99px;overflow:hidden;margin-top:9px}.progress span{display:block;height:100%;background:var(--green);width:0}
+nav{position:fixed;bottom:0;left:0;right:0;background:#111b17;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 4px calc(9px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;color:var(--muted);border:0;font-size:11px;padding:5px;display:grid;gap:3px;justify-items:center}nav button b{font-size:19px}nav button.active{color:var(--green)}
+button,.btn{border:0;border-radius:11px;background:var(--accent);color:white;padding:11px 14px;font-weight:650;font-size:14px;cursor:pointer}
+button.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+button:disabled{opacity:.4}
+input,select,textarea{width:100%;background:#0f1914;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;margin-top:5px}
+label{display:block;color:var(--muted);font-size:12px;margin:11px 0 3px}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0}
+.check{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.check:last-child{border:0}.check input{width:20px;height:20px;accent-color:var(--accent);margin:0}
+.daygrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0}.day{padding:9px 2px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:12px}.day.sel{border-color:var(--green);color:var(--green)}.day.done{background:#214333;color:var(--green)}
+.exercise{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.exercise:last-child{border:0}.exercise span{color:var(--muted);font-size:12px}
+.tabs{display:flex;gap:7px;overflow:auto}.tabs button{white-space:nowrap}
+.hidden{display:none!important}.notice{background:#26372d;border-radius:12px;padding:11px;color:#d7f2df;font-size:12px;line-height:1.45}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:9px 4px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}
+canvas{width:100%;height:190px;background:#101a15;border-radius:12px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:10px}
+@media(min-width:600px){main{padding:22px}.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="row"><div><h1>HOLIDAY FIT</h1><p>Your training, nutrition & progress companion</p></div><div style="font-size:28px">💪</div></div></header>
+<main>
+<section id="home" class="page">
+ <div class="card">
+  <div class="row"><div><div class="small">21-DAY CHALLENGE</div><h2 style="margin:4px 0">Holiday countdown</h2></div><span id="countdown" class="small">Set your start date</span></div>
+  <div class="stats" style="margin-top:13px">
+   <div class="stat"><span class="small">Current weight</span><strong id="currentWeight">105.0 kg</strong></div>
+   <div class="stat"><span class="small">Target weight</span><strong>&lt;100 kg</strong></div>
+   <div class="stat"><span class="small">Gym sessions</span><strong id="gymStat">0/4</strong></div>
+   <div class="stat"><span class="small">Walks</span><strong id="walkStat">0/7</strong></div>
+  </div>
+  <div class="row" style="margin-top:16px"><span class="small">Challenge completion</span><b id="completion">0%</b></div><div class="progress"><span id="progressBar"></span></div>
+ </div>
+ <div class="card"><h2>Today's check-in</h2><div class="row"><b id="todayLabel">Day 1</b><span class="small" id="todayWorkout">Upper body A</span></div>
+  <div id="dailyChecks"></div>
+  <div class="row" style="margin-top:12px"><button class="secondary" onclick="showPage('workouts')">View workout</button><button onclick="showPage('diary')">Log food</button></div>
+ </div>
+ <div class="card"><h2>Quick log</h2><div class="stats">
+  <div><label>Morning weight (kg)</label><input id="quickWeight" type="number" step=".1" placeholder="e.g. 104.8"></div>
+  <div><label>Water (litres)</label><input id="quickWater" type="number" step=".1" placeholder="e.g. 2.5"></div>
+ </div><button style="width:100%;margin-top:12px" onclick="saveQuickLog()">Save today's check-in</button></div>
+ <div class="notice">Aim for steady progress, not crash dieting. A loss of around 0.5–1 kg per week is generally more sustainable; scale changes also include water fluctuations.</div>
+</section>
+
+<section id="workouts" class="page hidden">
+ <div class="card"><h2>Workout plan</h2><div class="small">Four 40-minute strength sessions each week, plus easy walking/recovery days.</div>
+ <div class="tabs" style="margin:14px 0"><button class="secondary" onclick="renderWorkout('Upper A')">Upper A</button><button class="secondary" onclick="renderWorkout('Lower A')">Lower A</button><button class="secondary" onclick="renderWorkout('Upper B')">Upper B</button><button class="secondary" onclick="renderWorkout('Lower B')">Lower B</button></div>
+ <div id="workoutList"></div><div style="margin-top:13px"><label>Workout date</label><input id="workoutDate" type="date"><button style="width:100%;margin-top:10px" onclick="completeWorkout()">Mark workout complete</button></div></div>
+ <div class="card"><h2>Weekly schedule</h2><table><tr><th>Day</th><th>Plan</th></tr><tr><td>Mon</td><td>Upper body A</td></tr><tr><td>Tue</td><td>Lower body A</td></tr><tr><td>Wed</td><td>Recovery + walk</td></tr><tr><td>Thu</td><td>Upper body B</td></tr><tr><td>Fri</td><td>Lower body B</td></tr><tr><td>Sat</td><td>Recovery + walk</td></tr><tr><td>Sun</td><td>Recovery + walk</td></tr></table></div>
+</section>
+
+<section id="diary" class="page hidden">
+ <div class="card"><h2>Food diary</h2><div class="stats"><div class="stat"><span class="small">Calories</span><strong id="calTotal">0</strong><span class="small">/ 2,000 kcal guide</span></div><div class="stat"><span class="small">Protein</span><strong id="proteinTotal">0g</strong><span class="small">/ 160g guide</span></div></div>
+ <label>Food / meal</label><input id="foodName" placeholder="e.g. chicken and rice">
+ <div class="stats"><div><label>Calories</label><input id="foodCal" type="number" placeholder="kcal"></div><div><label>Protein (g)</label><input id="foodProtein" type="number" placeholder="grams"></div></div>
+ <button style="width:100%;margin-top:12px" onclick="addFood()">Add food</button><div id="foodList" style="margin-top:12px"></div></div>
+ <div class="card"><h2>Daily nutrition targets</h2><p class="small">Starting guide only; needs personalising for age, sex and health context.</p><div class="exercise"><b>Calories</b><span>1,900–2,100 kcal</span></div><div class="exercise"><b>Protein</b><span>150–170 g</span></div><div class="exercise"><b>Water</b><span>Adjust to thirst/activity</span></div></div>
+</section>
+
+<section id="progress" class="page hidden">
+ <div class="card"><h2>Weight progress</h2><div class="small">Log weight regularly under Check-in. Use the trend, not a single reading.</div><canvas id="weightChart" width="600" height="250"></canvas><div id="weightHistory"></div></div>
+ <div class="card"><h2>Challenge settings</h2><label>Challenge start date</label><input id="startDate" type="date"><label>Starting weight (kg)</label><input id="startingWeight" type="number" step=".1" value="105"><label>Target weight (kg)</label><input id="targetWeight" type="number" step=".1" value="99.9"><button style="width:100%;margin-top:12px" onclick="saveSettings()">Save settings</button></div>
+ <div class="card"><h2>Data</h2><p class="small">Your records are stored in this browser on this device. Clearing browser data or uninstalling/resetting the browser may erase them. Export a backup regularly.</p><button onclick="exportData()">Export backup</button> <button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importData(event)"></div>
+</section>
+<footer>Holiday Fit • Personal tracker • Not medical advice</footer>
+</main>
+<nav>
+<button class="active" data-page="home" onclick="showPage('home')"><b>⌂</b>Home</button>
+<button data-page="workouts" onclick="showPage('workouts')"><b>🏋</b>Workouts</button>
+<button data-page="diary" onclick="showPage('diary')"><b>🥗</b>Food</button>
+<button data-page="progress" onclick="showPage('progress')"><b>▥</b>Progress</button>
+</nav>
+<script>
+const routines={
+'Upper A':[['Chest press','3 × 10–12'],['Lat pulldown','3 × 10–12'],['Seated shoulder press','3 × 10'],['Seated cable row','3 × 12'],['Tricep pushdown','2 × 12'],['Dumbbell bicep curls','2 × 12']],
+'Lower A':[['Leg press','3 × 12'],['Romanian deadlift','3 × 10'],['Seated leg curl','3 × 12'],['Leg extension','2 × 12'],['Standing calf raises','2 × 15'],['Plank','2 × 30–45 sec']],
+'Upper B':[['Incline dumbbell press','3 × 10'],['Assisted pull-ups or pulldown','3 × 10'],['Dumbbell lateral raises','3 × 12'],['Chest-supported row','3 × 10'],['Cable tricep extension','2 × 12'],['Hammer curls','2 × 12']],
+'Lower B':[['Goblet squats','3 × 12'],['Hip thrusts','3 × 12'],['Walking lunges','2 × 10 each leg'],['Seated leg curl','3 × 12'],['Calf raises','2 × 15'],['Cable crunches','2 × 15']]
+};
+const schedule=['Upper A','Lower A','Recovery','Upper B','Lower B','Recovery','Recovery'];
+const blank=()=>({gym:false,walk:false,protein:false,calories:false,weight:'',water:'',foods:[],workouts:[]});
+let data=JSON.parse(localStorage.getItem('holidayFitData')||'null')||{startDate:new Date().toISOString().slice(0,10),startingWeight:105,targetWeight:99.9,days:Array.from({length:21},blank)};
+function save(){localStorage.setItem('holidayFitData',JSON.stringify(data));refresh()}
+function dayIndex(){let start=new Date(data.startDate+'T12:00:00'),now=new Date();let diff=Math.floor((new Date(now.getFullYear(),now.getMonth(),now.getDate())-new Date(start.getFullYear(),start.getMonth(),start.getDate()))/86400000);return Math.max(0,Math.min(20,diff))}
+function ensure(i){while(data.days.length<=i)data.days.push(blank());if(!data.days[i])data.days[i]=blank();return data.days[i]}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(id==='progress')drawChart()}
+function renderWorkout(name){document.getElementById('workoutList').innerHTML=`<h3>${name}</h3>`+routines[name].map(x=>`<div class="exercise"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');document.getElementById('workoutDate').value=new Date().toISOString().slice(0,10);document.getElementById('workoutList').dataset.name=name}
+function completeWorkout(){let date=document.getElementById('workoutDate').value;if(!date)return alert('Choose a date');let i=Math.max(0,Math.floor((new Date(date+'T12:00:00')-new Date(data.startDate+'T12:00:00'))/86400000));let d=ensure(i);d.gym=true;d.workouts.push(document.getElementById('workoutList').dataset.name||'Workout');save();alert('Workout logged')}
+function saveQuickLog(){let d=ensure(dayIndex());d.weight=document.getElementById('quickWeight').value||d.weight;d.water=document.getElementById('quickWater').value||d.water;save()}
+function addFood(){let name=document.getElementById('foodName').value.trim(),cal=Number(document.getElementById('foodCal').value),protein=Number(document.getElementById('foodProtein').value);if(!name||!cal)return alert('Enter a food name and calories');ensure(dayIndex()).foods.push({name,cal,protein});['foodName','foodCal','foodProtein'].forEach(id=>document.getElementById(id).value='');save()}
+function refresh(){let i=dayIndex(),d=ensure(i);document.getElementById('currentWeight').textContent=(d.weight||data.startingWeight)+' kg';document.getElementById('todayLabel').textContent='Day '+(i+1);document.getElementById('todayWorkout').textContent=schedule[i%7];document.getElementById('countdown').textContent=(21-i)+' days to go';let week=Math.floor(i/7),weekDays=data.days.slice(week*7,week*7+7);document.getElementById('gymStat').textContent=weekDays.filter(x=>x.gym).length+'/4';document.getElementById('walkStat').textContent=weekDays.filter(x=>x.walk).length+'/7';let done=data.days.filter(x=>x.walk||x.gym||x.protein||x.calories).length,pc=Math.round(done/21*100);document.getElementById('completion').textContent=pc+'%';document.getElementById('progressBar').style.width=pc+'%';
+document.getElementById('dailyChecks').innerHTML=[['gym','Gym session'],['walk','30-minute treadmill walk'],['protein','Protein target'],['calories','Calorie target']].map(([k,l])=>`<label class="check"><input type="checkbox" data-key="${k}" ${d[k]?'checked':''}>${l}</label>`).join('');
+document.querySelectorAll('#dailyChecks input').forEach(el=>el.addEventListener('change',e=>{d[e.target.dataset.key]=e.target.checked;save()}));
+document.getElementById('quickWeight').value=d.weight||'';document.getElementById('quickWater').value=d.water||'';
+let foods=d.foods||[];document.getElementById('calTotal').textContent=foods.reduce((a,x)=>a+x.cal,0);document.getElementById('proteinTotal').textContent=foods.reduce((a,x)=>a+x.protein,0)+'g';document.getElementById('foodList').innerHTML=foods.map((x,j)=>`<div class="exercise"><b>${x.name}</b><span>${x.cal} kcal • ${x.protein}g protein <button class="secondary" style="padding:4px 7px" onclick="removeFood(${j})">×</button></span></div>`).join('');
+document.getElementById('startDate').value=data.startDate;document.getElementById('startingWeight').value=data.startingWeight;document.getElementById('targetWeight').value=data.targetWeight;document.getElementById('weightHistory').innerHTML=data.days.map((x,j)=>x.weight?`<div class="exercise"><b>Day ${j+1}</b><span>${x.weight} kg</span></div>`:'').join('')||'<p class="small">No weigh-ins yet.</p>';drawChart()}
+function removeFood(j){ensure(dayIndex()).foods.splice(j,1);save()}
+function saveSettings(){data.startDate=document.getElementById('startDate').value||data.startDate;data.startingWeight=Number(document.getElementById('startingWeight').value)||105;data.targetWeight=Number(document.getElementById('targetWeight').value)||99.9;save();alert('Settings saved')}
+function drawChart(){let c=document.getElementById('weightChart');if(!c)return;let ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);let pts=data.days.map((x,i)=>x.weight?{i,v:Number(x.weight)}:null).filter(Boolean);ctx.strokeStyle='#405348';ctx.lineWidth=1;for(let y=30;y<h-25;y+=45){ctx.beginPath();ctx.moveTo(35,y);ctx.lineTo(w-15,y);ctx.stroke()}if(!pts.length){ctx.fillStyle='#a8b8af';ctx.font='16px sans-serif';ctx.fillText('Add weigh-ins to see your trend',35,120);return}let vals=pts.map(p=>p.v),min=Math.min(...vals,data.targetWeight)-1,max=Math.max(...vals,data.startingWeight)+1;let y=v=>h-30-(v-min)/(max-min)*(h-60),x=i=>35+i/20*(w-55);ctx.strokeStyle='#9be3b2';ctx.lineWidth=3;ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(x(p.i),y(p.v)):ctx.moveTo(x(p.i),y(p.v)));ctx.stroke();pts.forEach(p=>{ctx.fillStyle='#9be3b2';ctx.beginPath();ctx.arc(x(p.i),y(p.v),5,0,Math.PI*2);ctx.fill()})}
+function exportData(){let a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.href=url;a.download='holiday-fit-backup.json';a.click();URL.revokeObjectURL(url)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.days||!x.startDate)throw 0;data=x;save();alert('Backup restored')}catch{alert('That backup file could not be read')}};r.readAsText(f)}
+renderWorkout('Upper A');refresh();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
